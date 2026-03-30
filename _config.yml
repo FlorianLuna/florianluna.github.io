@@ -21,10 +21,11 @@
 title: Florian Luna's homepage
 email: florian.luna@gmail.com
 description: >- # this means to ignore newlines until "baseurl:"
-  Site under construction
+  A place where I share a bit of everything. The views expressed here are my own and do not reflect those of my employer.
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "" # the base hostname & protocol for your site, e.g. http://example.com
 github_username:  FlorianLuna
+linkedin_username: florian-luna-6a3b5a2a
 
 # Build settings
 theme: minima
