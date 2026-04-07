@@ -1,0 +1,12 @@
+---
+layout: post
+title:  "A non exhuastive list of arguments for UE projects"
+date:   2026-03-31 13:06:54 +0200
+published: true
+---
+It is quite common to use various arguments when working on an Unreal Engine project. I will try here to provide a (non-exhaustive) list of convenient argument I use.
+
+If you are using Visual Studio, setting the argument from the project properties is not the only way. You can use extensions for this. Smart Command Line arguments is quite useful but unfortunately it can cause performance issue on big projects and in the end I had to disable it. Using the Unreal VS extension was the most convenient. Check out the [Unreal VS documentation][Unreal-VS-doc] for more information.
+[Unreal-VS-doc]: https://dev.epicgames.com/documentation/en-us/unreal-engine/using-the-unrealvs-extension-for-unreal-engine-cplusplus-projects
+
+
