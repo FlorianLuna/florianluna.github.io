@@ -1,12 +1,95 @@
 ---
 layout: post
-title:  "A non exhuastive list of arguments for UE projects"
+title:  "A non-exhaustive list of arguments for Unreal Engine projects"
 date:   2026-03-31 13:06:54 +0200
 published: true
 ---
-It is quite common to use various arguments when working on an Unreal Engine project. I will try here to provide a (non-exhaustive) list of convenient argument I use.
+It is quite common to use various arguments when working on an Unreal Engine project. I will try here to provide a (non-exhaustive) list of convenient arguments I use. 
 
-If you are using Visual Studio, setting the argument from the project properties is not the only way. You can use extensions for this. Smart Command Line arguments is quite useful but unfortunately it can cause performance issue on big projects and in the end I had to disable it. Using the Unreal VS extension was the most convenient. Check out the [Unreal VS documentation][Unreal-VS-doc] for more information.
+If you are using Visual Studio, setting the argument from the project properties is not the only way. You can use extensions for this. *Smart Command Line Arguments* is quite useful but unfortunately it can cause performance issues on big projects and in the end I had to disable it. Using the Unreal VS extension was the most convenient. Check out the [Unreal VS documentation][Unreal-VS-doc] for more information.
+
+> **⚠️ Disclaimer**
+> Some of these arguments may be invalid or behave differently depending on the Unreal Engine version.
+
 [Unreal-VS-doc]: https://dev.epicgames.com/documentation/en-us/unreal-engine/using-the-unrealvs-extension-for-unreal-engine-cplusplus-projects
 
+### Editor/Various
 
+| Flag                         | Description                                                                 | Typical Use Case                          | Notes |
+|------------------------------|-----------------------------------------------------------------------------|-------------------------------------------|-------|
+| -noAssetDiscovery            | Disables automatic asset discovery at startup.                              | Faster startup, controlled asset loading  | Useful when asset registry is prebuilt or fixed. |
+| -skipAssetScan               | Skips scanning assets entirely during startup.                              | Minimizing startup time in cooked builds  | Requires a valid pre-generated Asset Registry; otherwise assets may be missing. |
+| -basedir=                    | Overrides the base directory used by the executable.                        | Running builds from custom locations      | Path must point to a valid packaged build directory. |
+| -EnableCheats                | Enables cheat commands in non-development builds.                           | Testing gameplay/debugging in packaged builds | Requires cheat manager or console commands to be implemented. |
+| -nosound                     | Disables all audio output and sound system initialization.                  | Performance testing, headless runs        | Useful for CPU/GPU profiling without audio overhead. |
+| -DisablePlugins=PluginName   | Disables one or more plugins at startup.                                    | Isolating issues, reducing load footprint | Can specify multiple plugins (comma-separated). Plugin must not be required by dependencies. |
+
+### Rendering
+
+| Category | Flag | Description |
+|---|---|---|
+| NVIDIA Crash Debugging | -nvaftermath=0 | Disables NVIDIA Aftermath GPU crash debugging integration. |
+| NVIDIA Crash Debugging | -NoNvAftermath | Explicitly disables NVIDIA Aftermath crash debugging (equivalent intent to `-nvaftermath=0`). |
+| NVIDIA Features | -ngxdisable | Disables NVIDIA NGX features such as DLSS or other NGX SDK features. |
+| D3D12 Crash Diagnostics | -dred | Enables Direct3D Device Removed Extended Data (DRED) crash diagnostics. |
+| D3D12 Crash Diagnostics | -dred=0 | Disables DRED diagnostics. |
+| D3D12 Debugging | -d3ddebug | Enables the Direct3D debug layer for additional validation and diagnostic messages. |
+| D3D12 Debugging | -d3dbreakonwarning | Causes the debugger to break when the D3D debug layer emits a warning. |
+| D3D12 GPU Validation | -D3D12GPUValidation | Enables GPU-based validation in Direct3D 12 to detect incorrect GPU API usage. |
+| D3D12 GPU Validation | -gpuvalidation | Enables GPU validation checks for resource/state misuse. |
+| GPU Crash Debugging | -gpucrashdebugging | Enables additional GPU crash debugging (breadcrumbs, Aftermath, etc. depending on platform). |
+| RDG Debugging | -rdgimmediate | Executes Render Dependency Graph passes immediately instead of deferred scheduling. |
+| RHI Threading | -norhithread | Disables the RHI thread and runs rendering commands on the main thread. |
+| RHI Debugging | -forcerhibypass | Forces RHI bypass mode so commands execute immediately without batching. |
+| Threading | -onethread | Forces the engine to run in a single-threaded mode by disabling task graph multithreading. Useful when debugging race conditions or threading-related crashes. |
+| Tools / Capture | -AttachRenderDoc | Automatically attaches RenderDoc for frame capture debugging. |
+| Tools / Capture | -attachPix | Automatically attaches Microsoft PIX to the application for GPU debugging and capture. |
+| Driver / PSO Cache | -clearPSODriverCache | Clears the GPU driver’s Pipeline State Object (PSO) cache before launch. |
+
+#### Recommended D3D12 GPU Debugging Configuration
+
+When investigating GPU crashes, device removal errors, or rendering validation issues in Unreal Engine using Direct3D 12, the following command-line arguments are commonly enabled together:
+
+*-d3ddebug -d3dbreakonwarning -gpuvalidation -dred -gpucrashdebugging*
+
+This configuration activates several layers of diagnostics provided by Direct3D and Unreal Engine.
+Enabled Diagnostics
+
+-d3ddebug
+Enables the Direct3D debug layer. This layer performs additional runtime validation of API usage and reports detailed messages for incorrect resource states, invalid parameters, or misuse of the D3D12 API.
+
+-d3dbreakonwarning
+Configures the Direct3D debug layer to trigger a debugger break whenever a warning is emitted. This helps identify issues at the exact moment they occur rather than after a GPU failure.
+
+-gpuvalidation
+Enables GPU-based validation. This validation runs additional checks on the GPU to detect incorrect resource usage such as descriptor misuse, invalid resource states, or out-of-bounds accesses that may not be caught by CPU-side validation.
+
+-dred
+Enables Device Removed Extended Data (DRED) diagnostics. When a GPU device removal or crash occurs, DRED records breadcrumbs and detailed information about the GPU command history to help identify the failing operation.
+
+-gpucrashdebugging
+Enables Unreal Engine GPU crash debugging features. Depending on the platform and GPU vendor, this can include GPU breadcrumbs, integration with vendor crash debugging tools, and enhanced crash reporting.
+Typical Use Cases
+
+
+### Profiling
+
+| Flag                         | Description                                                                 | Typical Use Case                          | Notes |
+|------------------------------|-----------------------------------------------------------------------------|-------------------------------------------|-------|
+| -poisonmallocproxy           | Wraps allocations with patterns to detect memory misuse.                    | Memory debugging                          | Helps catch use-after-free and uninitialized reads. |
+| -stompmalloc                 | Uses a guarded allocator that places allocations on separate pages.         | Detecting buffer overruns/underruns       | Very slow; intended only for debugging. |
+| -nothreadtimeout             | Disables thread timeout detection.                                          | Debugging long stalls                     | Prevents watchdogs from terminating hung threads. |
+| -LLM                         | Enables Low-Level Memory (LLM) tracking.                                    | Memory profiling                          | Required for detailed memory breakdowns (`stat LLM`). |
+| -noailogging                 | Disables AI logging output.                                                 | Reducing log noise/perf overhead          | Useful in large-scale AI simulations. |
+| -noscreenmessages            | Disables on-screen debug messages.                                          | Cleaner output / benchmarking             | Equivalent to suppressing `GEngine->AddOnScreenDebugMessage`. |
+| -NOVERIFYGC                  | Disables garbage collection verification checks.                            | Profiling / performance analysis          | Can hide GC issues; not safe for debugging correctness. |
+| -statnamedevents             | Enables named stat events for profiling tools.                              | CPU/GPU profiling                         | Improves visibility in external profilers (e.g., PIX). |
+| -trace=task,default          | Enables tracing for task graph and default channels.                        | Performance analysis                      | Uses Unreal Insights tracing system. |
+| -trace=default,stats,counters| Enables tracing for default, stats, and counter channels.                   | Detailed telemetry capture                | Can generate large trace files; combine with `-tracehost`. |
+
+### Runtime
+
+| Flag        | Description                                                                 | Typical Use Case                          | Notes |
+|-------------|-----------------------------------------------------------------------------|-------------------------------------------|-------|
+| -inifile=   | Overrides one or more config (.ini) files at startup.                       | Testing custom configurations             | Format: `-inifile=<ConfigName>:<Path>` (e.g., `Engine:MyEngine.ini`). Can be specified multiple times. |
+| -DPCVars=   | Sets console variables (CVars) at startup via Device Profile system.        | Forcing runtime settings for profiling    | Format: `-DPCVars="r.ShadowQuality=0,r.TextureStreaming=0"`. Applied early, before most systems initialize. |
